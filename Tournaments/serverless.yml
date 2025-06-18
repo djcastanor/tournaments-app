@@ -1,0 +1,66 @@
+# "org" ensures this Service is used with the correct Serverless Framework Access Key.
+org: davidj3311
+# "app" enables Serverless Framework Dashboard features and sharing them with other Services.
+app: tournamentsapp
+# "service" is the name of this project. This will also be added to your AWS resource names.
+service: Tournaments
+
+stages:
+  default:
+    params:
+      tableName: "tournaments-table-${sls:stage}"
+      ticketsTableName: "tickets-table-${sls:stage}"
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:Query
+            - dynamodb:Scan
+            - dynamodb:GetItem
+            - dynamodb:PutItem
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+          Resource:
+            - Fn::GetAtt: [TournamentsTable, Arn]
+            - Fn::GetAtt: [TicketsTable, Arn]
+  environment:
+    USERS_TABLE: ${param:tableName}
+    TICKETS_TABLE: ${param:ticketsTableName}
+
+functions:
+  api:
+    handler: handler.handler
+    events:
+      - httpApi: "*"
+        cors: true
+
+resources:
+  Resources:
+    TournamentsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: tournamentId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: tournamentId
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+        TableName: ${param:tableName}
+
+    TicketsTable: 
+      Type: AWS::DynamoDB::Table
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: ticketId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: ticketId
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+        TableName: ${param:ticketsTableName}
