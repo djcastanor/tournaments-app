@@ -29,6 +29,19 @@ class TournamentRepository {
         const result = await dynamo.scan(params).promise();
         return result.Items;
     }
+
+    async getById(tournamentId) {
+    const params = {
+        TableName: process.env.TOURNAMENTS_TABLE || 'tournaments-table-dev',
+        Key: {
+            tournamentId: tournamentId
+        }
+    };
+
+    const result = await dynamo.get(params).promise();
+    return result.Item;
+}
+
 }
 
 module.exports = TournamentRepository;

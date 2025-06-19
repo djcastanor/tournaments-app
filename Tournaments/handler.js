@@ -10,6 +10,7 @@ require('dotenv').config();
 
 const TournamentsRepository = require('./infraestruture/TournamentRepository');
 const GetAllTournamentsUseCase = require('./application/use_cases/getAllTournamentsUseCase');
+const GetTournamentByIdUseCase = require('./application/use_cases/getTournamentByIdUseCase');
 const CreateTournamentUseCase = require('./application/use_cases/CreateTournamentUseCase');
 const TicketRepository =require('./infraestruture/TicketRepository');
 const authMiddleware = require('./interfaces/http/middleware/authMiddleware');
@@ -42,12 +43,27 @@ app.get('/tournaments', authMiddleware, async(req, res) => {
     res.status(200).json(result);
 })
 
+app.get('/tournaments/:tournamentId', authMiddleware, async (req, res) => {
+    try {
+        const { tournamentId } = req.params;
+
+        const useCase = new GetTournamentByIdUseCase(repo);
+        const tournament = await useCase.execute(tournamentId);
+
+        res.status(200).json(tournament);
+    } catch (error) {
+        console.error('Error al obtener el torneo por ID:', error.message);
+        res.status(404).json({ error: error.message });
+    }
+});
+
+
 app.post('/tournaments', authMiddleware, async(req, res) => {
-  const { name, description, category, responsible,price , startDate, endDate } = req.body;
+  const { name, description, category, responsible, price, fee, startDate, endDate } = req.body;
 
   try {
     const useCase = new CreateTournamentUseCase(repo);
-    const newTournament = await useCase.execute({ name, description, category, responsible, price,startDate, endDate });
+    const newTournament = await useCase.execute({ name, description, category, responsible, price, fee, startDate, endDate });
 
     res.status(201).json(newTournament);
   } catch (error) {
