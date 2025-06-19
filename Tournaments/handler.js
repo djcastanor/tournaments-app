@@ -43,11 +43,11 @@ app.get('/tournaments', authMiddleware, async(req, res) => {
 })
 
 app.post('/tournaments', authMiddleware, async(req, res) => {
-  const { name, description, category, responsible, startDate, endDate } = req.body;
+  const { name, description, category, responsible,price , startDate, endDate } = req.body;
 
   try {
     const useCase = new CreateTournamentUseCase(repo);
-    const newTournament = await useCase.execute({ name, description, category, responsible, startDate, endDate });
+    const newTournament = await useCase.execute({ name, description, category, responsible, price,startDate, endDate });
 
     res.status(201).json(newTournament);
   } catch (error) {
